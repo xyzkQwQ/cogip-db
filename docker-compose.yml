@@ -1,0 +1,28 @@
+# Plus d'information sur la mise en place et l'utilisation de ce fichier de configuration :
+# - https://medium.com/@agusmahari/docker-how-to-install-postgresql-using-docker-compose-d646c793f216
+services:
+  postgres:
+    # Nom du conteneur qui sera créé
+    container_name: cogip-db
+    # Indication du dossier contenant le Dockerfile permettant de créer une image sur-mesure
+    build:
+      context: ./config
+    # Variables d'environnement qui seront utilisées pour configurer le conteneur
+    environment:
+      # Utilisateur super admin ! Attentation !
+      - POSTGRES_USER=${POSTGRES_USER}
+      # Mot de passe du super admin, super sensible.
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      # Nom d'une base de données créée au lancement du conteneur
+      - POSTGRES_DB=cogip
+    command: [ "postgres", "-c", "config_file=/etc/postgresql.conf"]
+    # Redirection de port "local:conteneur"
+    ports:
+      - "5433:5432"
+    # Le "docker engine" tente systématiquement de redémarrer le conteneur
+    # de plus, le conteneur est démarrer automatiquement au lancement du "doker engine"
+    restart: always
+    # Création du volume permettant d'ajouter le script de création de la base de données au conteneur Docker
+    volumes:
+      - ./dump/cogip-supply.sql:/docker-entrypoint-initdb.d/cogip-supply.sql
+      - ./config/postgresql.conf:/etc/postgresql.conf
